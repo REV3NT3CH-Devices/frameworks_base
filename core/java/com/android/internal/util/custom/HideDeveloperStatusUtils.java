@@ -18,13 +18,12 @@ public class HideDeveloperStatusUtils {
         Settings.Global.DEVELOPMENT_SETTINGS_ENABLED
     ));
 
-    public static boolean shouldHideDevStatus(Context mContext, String packageName, String name) {
-        return getApps(mContext).contains(packageName) && settingsToHide.contains(name);
+    public static boolean shouldHideDevStatus(ContentResolver cr, String packageName, String name) {
+        return getApps(cr).contains(packageName) && settingsToHide.contains(name);
     }
 
-    public static Set<String> getApps(Context mContext) {
-        String apps = Settings.Secure.getString(mContext.getContentResolver(),
-                Settings.Secure.HIDE_DEVELOPER_STATUS);
+    private static Set<String> getApps(ContentResolver cr) {
+        String apps = Settings.Secure.getString(cr, Settings.Secure.HIDE_DEVELOPER_STATUS);
         if (apps != null) {
             mApps = new HashSet<>(Arrays.asList(apps.split(",")));
         } else {
@@ -33,22 +32,21 @@ public class HideDeveloperStatusUtils {
         return mApps;
     }
 
-    public void addApp(Context mContext, String packageName) {
+    public void addApp(Context mContext, String packageName, int userId) {
         mApps.add(packageName);
-        Settings.Secure.putString(mContext.getContentResolver(),
-                Settings.Secure.HIDE_DEVELOPER_STATUS, String.join(",", mApps));
+        Settings.Secure.putStringForUser(mContext.getContentResolver(),
+                Settings.Secure.HIDE_DEVELOPER_STATUS, String.join(",", mApps), userId);
     }
 
-    public void removeApp(Context mContext, String packageName) {
+    public void removeApp(Context mContext, String packageName, int userId) {
         mApps.remove(packageName);
-        Settings.Secure.putString(mContext.getContentResolver(),
-                Settings.Secure.HIDE_DEVELOPER_STATUS, String.join(",", mApps));
+        Settings.Secure.putStringForUser(mContext.getContentResolver(),
+                Settings.Secure.HIDE_DEVELOPER_STATUS, String.join(",", mApps), userId);
     }
 
-    public void setApps(Context mContext) {
+    public void setApps(Context mContext, int userId) {
         String apps = Settings.Secure.getStringForUser(mContext.getContentResolver(),
-                Settings.Secure.HIDE_DEVELOPER_STATUS,
-                UserHandle.USER_SYSTEM);
+                Settings.Secure.HIDE_DEVELOPER_STATUS, userId);
         if (apps != null) {
             mApps = new HashSet<>(Arrays.asList(apps.split(",")));
         } else {
